@@ -181,3 +181,4 @@ pyrightconfig.json
 .flaskenv*
 !.env.project
 !.env.vault
+frontend/node_modules
