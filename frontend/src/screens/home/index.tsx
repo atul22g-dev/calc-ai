@@ -1,6 +1,6 @@
 import { ColorSwatch, Group } from '@mantine/core';
 import { Button } from '@/components/ui/button';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import axios from 'axios';
 import Draggable from 'react-draggable';
 import { SWATCHES } from '@/constants';
@@ -41,11 +41,25 @@ export default function Home() {
         }
     }, [latexExpression]);
 
+    const renderLatexToCanvas = useCallback((expression: string, answer: string) => {
+        const latex = `\\(\\LARGE{${expression} = ${answer}}\\)`;
+        setLatexExpression([...latexExpression, latex]);
+
+        // Clear the main canvas
+        const canvas = canvasRef.current;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }, [latexExpression]);
+
     useEffect(() => {
         if (result) {
             renderLatexToCanvas(result.expression, result.answer);
         }
-    }, [result]);
+    }, [result, renderLatexToCanvas]);
 
     useEffect(() => {
         if (reset) {
@@ -86,20 +100,6 @@ export default function Home() {
         };
 
     }, []);
-
-    const renderLatexToCanvas = (expression: string, answer: string) => {
-        const latex = `\\(\\LARGE{${expression} = ${answer}}\\)`;
-        setLatexExpression([...latexExpression, latex]);
-
-        // Clear the main canvas
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-    };
 
     const resetCanvas = () => {
         const canvas = canvasRef.current;
