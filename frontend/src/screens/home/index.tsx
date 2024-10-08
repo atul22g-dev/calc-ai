@@ -43,7 +43,7 @@ export default function Home() {
 
     const renderLatexToCanvas = useCallback((expression: string, answer: string) => {
         const latex = `\\(\\LARGE{${expression} = ${answer}}\\)`;
-        setLatexExpression([...latexExpression, latex]);
+        setLatexExpression((prevLatexExpression) => [...prevLatexExpression, latex]);
 
         // Clear the main canvas
         const canvas = canvasRef.current;
@@ -53,7 +53,7 @@ export default function Home() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
-    }, [latexExpression]);
+    }, []);
 
     useEffect(() => {
         if (result) {
@@ -73,7 +73,7 @@ export default function Home() {
 
     useEffect(() => {
         const canvas = canvasRef.current;
-    
+
         if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
@@ -91,7 +91,7 @@ export default function Home() {
 
         script.onload = () => {
             window.MathJax.Hub.Config({
-                tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
+                tex2jax: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
             });
         };
 
@@ -147,7 +147,7 @@ export default function Home() {
 
     const runRoute = async () => {
         const canvas = canvasRef.current;
-    
+
         if (canvas) {
             const response = await axios({
                 method: 'post',
@@ -159,8 +159,8 @@ export default function Home() {
             });
 
             const resp = await response.data;
-            console.log('Response', resp);
             resp.data.forEach((data: Response) => {
+
                 if (data.assign === true) {
                     // dict_of_vars[resp.result] = resp.answer;
                     setDictOfVars({
@@ -190,12 +190,12 @@ export default function Home() {
 
             setLatexPosition({ x: centerX, y: centerY });
             resp.data.forEach((data: Response) => {
-                setTimeout(() => {
+                // setTimeout(() => {
                     setResult({
                         expression: data.expr,
                         answer: data.result
                     });
-                }, 1000);
+                // }, 1000);
             });
         }
     };
@@ -206,7 +206,7 @@ export default function Home() {
                 <Button
                     onClick={() => setReset(true)}
                     className='z-20 bg-black text-white'
-                    variant='outline' 
+                    variant='outline'
                     color='black'
                     size='sm'
                 >
@@ -220,7 +220,7 @@ export default function Home() {
                 <Button
                     onClick={runRoute}
                     className='z-20 bg-black text-white'
-                    variant='outline' 
+                    variant='outline'
                     color='black'
                     size='sm'
                 >
