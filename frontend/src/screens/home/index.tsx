@@ -161,7 +161,8 @@ export default function Home() {
                 resp = response.data;
             } catch {
                 alert(`Error: Internal Server Error. Please try again later.`);
-                setloading(true);
+                setloading(false);
+                setReset(true)
             }
 
             resp.data.forEach((data: Response) => {
