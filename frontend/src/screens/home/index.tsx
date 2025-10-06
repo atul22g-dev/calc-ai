@@ -5,6 +5,7 @@ import axios from 'axios';
 import Draggable from 'react-draggable';
 import { SWATCHES } from '@/constants';
 import { LazyBrush } from 'lazy-brush';
+import { GridLoader } from "react-spinners";
 
 interface GeneratedResult {
     expression: string;
@@ -20,6 +21,7 @@ interface Response {
 export default function Home() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
+    const [loading, setloading] = useState(false);
     const [color, setColor] = useState('rgb(255, 255, 255)');
     const [reset, setReset] = useState(false);
     const [dictOfVars, setDictOfVars] = useState({});
@@ -58,6 +60,7 @@ export default function Home() {
     useEffect(() => {
         if (result) {
             renderLatexToCanvas(result.expression, result.answer);
+            setloading(false);
         }
     }, [result, renderLatexToCanvas]);
 
@@ -144,21 +147,23 @@ export default function Home() {
     const stopDrawing = () => {
         setIsDrawing(false);
     };
-
     const runRoute = async () => {
         const canvas = canvasRef.current;
-
         if (canvas) {
-            const response = await axios({
-                method: 'post',
-                url: `${import.meta.env.VITE_API_URL}/calculate`,
-                data: {
+            setloading(true);
+            let resp;
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/calculate`, {
                     image: canvas.toDataURL('image/png'),
                     dict_of_vars: dictOfVars
-                }
-            });
+                });
 
-            const resp = await response.data;
+                resp = response.data;
+            } catch {
+                alert(`Error: Internal Server Error. Please try again later.`);
+                setloading(true);
+            }
+
             resp.data.forEach((data: Response) => {
 
                 if (data.assign === true) {
@@ -191,14 +196,15 @@ export default function Home() {
             setLatexPosition({ x: centerX, y: centerY });
             resp.data.forEach((data: Response) => {
                 // setTimeout(() => {
-                    setResult({
-                        expression: data.expr,
-                        answer: data.result
-                    });
+                setResult({
+                    expression: data.expr,
+                    answer: data.result
+                });
                 // }, 1000);
             });
         }
     };
+
 
     return (
         <>
@@ -230,11 +236,21 @@ export default function Home() {
             <canvas
                 ref={canvasRef}
                 id='canvas'
-                className='absolute top-0 left-0 w-full h-full'
+                className='absolute top-0 left-0 w-full h-full z-0'
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
                 onMouseOut={stopDrawing}
+            />
+            <GridLoader
+                color="#ffffff"
+                cssOverride={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                }}
+                loading={loading}
             />
 
             {latexExpression && latexExpression.map((latex, index) => (

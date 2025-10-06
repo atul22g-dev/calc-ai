@@ -7,6 +7,10 @@ from PIL import Image
 
 router = APIRouter()
 
+
+from fastapi import HTTPException
+import traceback
+
 @router.post('')
 async def run(data: ImageData):
     image_data = base64.b64decode(data.image.split(",")[1])  # Assumes data:image/png;base64,<data>
